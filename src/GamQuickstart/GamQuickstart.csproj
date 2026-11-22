@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>gam-quickstart</AssemblyName>
+    <RootNamespace>GamQuickstart</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Official Google Ad Manager SOAP API client library (Apache-2.0). -->
+    <PackageReference Include="Google.Dfp" Version="24.36.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Your local, git-ignored settings file. It is optional: environment variables work too. -->
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

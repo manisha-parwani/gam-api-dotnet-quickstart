@@ -1,0 +1,36 @@
+# --- .NET build output ---
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+*.trx
+coverage*.xml
+*.coverage
+
+# --- IDEs and OS files ---
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+.DS_Store
+Thumbs.db
+
+# --- Secrets: never commit credentials or real settings ---
+# Real settings file (copy appsettings.example.json to appsettings.json).
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+# Service account keys and other credential files.
+*service-account*.json
+*-key.json
+*.p12
+*.pem
+.env
+.env.*
+secrets/
+
+# --- Local scratch work ---
+.scratch/
