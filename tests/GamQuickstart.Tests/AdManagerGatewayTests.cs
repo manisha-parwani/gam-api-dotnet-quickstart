@@ -63,7 +63,7 @@ public sealed class AdManagerGatewayTests : IDisposable
         {
             type = "service_account",
             client_email = "quickstart@example.iam.gserviceaccount.com",
-            private_key = "-----BEGIN PRIVATE KEY-----\nnot-a-key\n-----END PRIVATE KEY-----\n",
+            private_key = "this is not a PEM key",
         });
 
         var ex = Assert.Throws<SettingsException>(() => CreateGateway(keyPath));

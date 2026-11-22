@@ -20,45 +20,51 @@ public static class AdManagerErrorTranslator
     {
         ArgumentNullException.ThrowIfNull(exception);
 
-        switch (exception)
+        return exception switch
         {
-            case AdManagerApiException { ApiException: AdManagerApi.ApiException apiException }:
-            {
-                var errors = apiException.errors ?? [];
-                var details = Describe(errors, exception.Message);
+            AdManagerApiException { ApiException: AdManagerApi.ApiException apiException } =>
+                FromApiException(apiException, exception),
 
-                if (errors.OfType<AdManagerApi.QuotaError>().Any(e => e.reason == AdManagerApi.QuotaErrorReason.EXCEEDED_QUOTA))
-                {
-                    return new TransientApiException(TransientErrorKind.Quota, details, exception);
-                }
+            AdsOAuthException => FromOAuthException(exception),
 
-                if (errors.OfType<AdManagerApi.ServerError>().Any(e =>
-                        e.reason is AdManagerApi.ServerErrorReason.SERVER_ERROR or AdManagerApi.ServerErrorReason.SERVER_BUSY))
-                {
-                    return new TransientApiException(TransientErrorKind.Server, details, exception);
-                }
-
-                return new AdManagerRequestException(details, exception);
-            }
-
-            case AdsOAuthException:
-                // The inner exception usually holds the useful part, for example "invalid_grant".
-                var reason = exception.InnerException is { } inner ? $" ({inner.Message})" : string.Empty;
-                return new AdManagerRequestException(
-                    $"Authentication failed: {exception.Message}{reason} Check the key file and that the service "
-                    + "account was added as a user in your Ad Manager network.",
-                    exception);
-
-            case TimeoutException:
-                return new TransientApiException(TransientErrorKind.Network, exception.Message, exception);
+            TimeoutException =>
+                new TransientApiException(TransientErrorKind.Network, exception.Message, exception),
 
             // FaultException is a CommunicationException too, but it means the server answered with an error.
-            case CommunicationException and not FaultException:
-                return new TransientApiException(TransientErrorKind.Network, exception.Message, exception);
+            CommunicationException and not FaultException =>
+                new TransientApiException(TransientErrorKind.Network, exception.Message, exception),
 
-            default:
-                return null;
+            _ => null,
+        };
+    }
+
+    private static Exception FromApiException(AdManagerApi.ApiException apiException, Exception original)
+    {
+        var errors = apiException.errors ?? [];
+        var details = Describe(errors, original.Message);
+
+        if (errors.OfType<AdManagerApi.QuotaError>().Any(e => e.reason == AdManagerApi.QuotaErrorReason.EXCEEDED_QUOTA))
+        {
+            return new TransientApiException(TransientErrorKind.Quota, details, original);
         }
+
+        if (errors.OfType<AdManagerApi.ServerError>().Any(e =>
+                e.reason is AdManagerApi.ServerErrorReason.SERVER_ERROR or AdManagerApi.ServerErrorReason.SERVER_BUSY))
+        {
+            return new TransientApiException(TransientErrorKind.Server, details, original);
+        }
+
+        return new AdManagerRequestException(details, original);
+    }
+
+    private static AdManagerRequestException FromOAuthException(Exception exception)
+    {
+        // The inner exception usually holds the useful part, for example "invalid_grant".
+        var reason = exception.InnerException is { } inner ? $" ({inner.Message})" : string.Empty;
+        return new AdManagerRequestException(
+            $"Authentication failed: {exception.Message}{reason} Check the key file and that the service "
+            + "account was added as a user in your Ad Manager network.",
+            exception);
     }
 
     private static string Describe(AdManagerApi.ApiError[] errors, string fallback) =>

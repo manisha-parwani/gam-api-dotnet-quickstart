@@ -12,7 +12,8 @@ using var loggerFactory = LoggerFactory.Create(logging => logging
     .AddSimpleConsole(options =>
     {
         options.SingleLine = true;
-        options.TimestampFormat = "HH:mm:ss ";
+        // Quoted colons, so the time looks the same in every culture.
+        options.TimestampFormat = "HH':'mm':'ss ";
     }));
 
 // Used to download the creative image. The buffer limit stops very large downloads.
